@@ -1,3 +1,8 @@
+var ua_version;
+var ua_arch;
+var ua_bits;
+var chrome_platform;
+
 navigator.userAgentData.getHighEntropyValues(["architecture",
                                               "bitness",
 	                                      "platform",
@@ -5,10 +10,16 @@ navigator.userAgentData.getHighEntropyValues(["architecture",
 	                                      "fullVersionList",]).then(process_local_version);
 
 function process_local_version(ua) {
-    document.getElementById('your_chrome_version').innerText = ua.fullVersionList[1].version;
+    for (let i = 0; i < ua.fullVersionList.length; i++) {
+        if ( ua.fullVersionList[i].brand == "Google Chrome" ) {
+	    ua_version = ua.fullVersionList[i].version;
+	}
+    }
+    document.getElementById('your_chrome_version').innerText += ua_version;
     ua_platform = ua.platform.toLowerCase().replace(/\s/g, '');
     ua_arch = ua.architecture.toLowerCase();
     ua_bits = ua.bitness
+    console.log(`Chrome Version: ${ua_version} Platform: ${ua_platform} Arch: ${ua_arch} Bits: ${ua_bits}`);
     switch (ua_platform) {
         case "linux":
             chrome_platform = "linux";
@@ -38,24 +49,86 @@ function process_local_version(ua) {
 		chrome_platform = "mac_arm64";
             }
     }
-    document.getElementById('your_chrome_platform').innerText = chrome_platform; 
-    key = "AIzaSyDkSjprpkIA7CmE-yM3RBDbIGA4jnxAurc";
-    channel = "stable";
-    vh_url = `https://versionhistory.googleapis.com/v1/chrome/platforms/${chrome_platform}/channels/${channel}/versions/all/releases?key=${key}&pageSize=1&orderBy=version desc&filter=endtime=none&fields=releases/version`
+    console.log(`Derived Chrome Platform: ${chrome_platform}`)
+    var key = "AIzaSyDkSjprpkIA7CmE-yM3RBDbIGA4jnxAurc";
+    var channel = "stable";
+    var vh_url = `https://versionhistory.googleapis.com/v1/chrome/platforms/${chrome_platform}/channels/${channel}/versions/all/releases?key=${key}&pageSize=1&orderBy=version desc&filter=endtime=none&fields=releases/version`
     process_remote_version(vh_url);
 }
 
 async function process_remote_version(url) {
-   try {
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`Response status: ${response.status}`);
+    console.log(`Fetching URL ${url}...`)
+    try {
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`Response status: ${response.status}`);
+        }
+
+        const json = await response.json();
+	console.log(`Response: $json`);
+        var remote_version = json.releases[0].version;
+        document.getElementById('remote_chrome_version').innerText += remote_version;
+    } catch (error) {
+        console.error(error.message);
+    }
+    options = {"zeroExtend": true}
+    var comp_result = versionCompare(ua_version, remote_version, options);
+    switch (comp_result) {
+  	case 1:
+ 	    document.body.style.backgroundColor  = "yellow";
+	    break;
+	case 0:
+	    document.body.style.backgroundColor = "green";
+	    break;
+	case -1:
+	    document.body.style.backgroundColor = "orange";
+	    break;
+    }
+}
+
+function versionCompare(v1, v2, options) {
+    var lexicographical = options && options.lexicographical,
+        zeroExtend = options && options.zeroExtend,
+        v1parts = v1.split('.'),
+        v2parts = v2.split('.');
+
+    function isValidPart(x) {
+        return (lexicographical ? /^\d+[A-Za-z]*$/ : /^\d+$/).test(x);
     }
 
-    const json = await response.json();
-    document.getElementById('remote_chrome_version').innerText = json.releases[0].version
-   } catch (error) {
-    console.error(error.message);
-  }
-} 
+    if (!v1parts.every(isValidPart) || !v2parts.every(isValidPart)) {
+        return NaN;
+    }
 
+    if (zeroExtend) {
+        while (v1parts.length < v2parts.length) v1parts.push("0");
+        while (v2parts.length < v1parts.length) v2parts.push("0");
+    }
+
+    if (!lexicographical) {
+        v1parts = v1parts.map(Number);
+        v2parts = v2parts.map(Number);
+    }
+
+    for (var i = 0; i < v1parts.length; ++i) {
+        if (v2parts.length == i) {
+            return 1;
+        }
+
+        if (v1parts[i] == v2parts[i]) {
+            continue;
+        }
+        else if (v1parts[i] > v2parts[i]) {
+            return 1;
+        }
+        else {
+            return -1;
+        }
+    }
+
+    if (v1parts.length != v2parts.length) {
+        return -1;
+    }
+
+    return 0;
+}
