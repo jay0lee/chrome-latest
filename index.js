@@ -51,7 +51,11 @@ function process_local_version(ua) {
     }
     console.log(`Derived Chrome Platform: ${chrome_platform}`)
     var key = "AIzaSyDkSjprpkIA7CmE-yM3RBDbIGA4jnxAurc";
-    var channel = "stable";
+    var channel = window.location.pathname.split('/')[0].toLowerCase();
+    var valid_channels = ["extended", "stable", "beta", "dev", "canary", "ltc", "lts"];
+    if ( ! valid_channels.includes(channel) ) {
+        channel = "stable";
+    }
     var vh_url = `https://versionhistory.googleapis.com/v1/chrome/platforms/${chrome_platform}/channels/${channel}/versions/all/releases?key=${key}&pageSize=1&orderBy=version desc&filter=endtime=none&fields=releases/version`
     process_remote_version(vh_url);
 }
