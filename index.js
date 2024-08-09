@@ -73,7 +73,7 @@ async function process_remote_version(url) {
 
         const json = await response.json();
 	console.log("Response:");
-	console.log($json);
+	console.log(json);
         var remote_version = json.releases[1].version;
         document.getElementById('remote_chrome_version').innerText += remote_version;
     } catch (error) {
