@@ -51,7 +51,7 @@ function process_local_version(ua) {
     }
     console.log(`Derived Chrome Platform: ${chrome_platform}`)
     var key = "AIzaSyDkSjprpkIA7CmE-yM3RBDbIGA4jnxAurc";
-    var channel = window.location.pathname.split('/')[0].toLowerCase();
+    var channel = window.location.pathname.split('/')[1].toLowerCase();
     var valid_channels = ["extended", "stable", "beta", "dev", "canary", "ltc", "lts"];
     if ( ! valid_channels.includes(channel) ) {
         console.log(`invalid derived channel ${channel}. Defaulting to stable.`);
@@ -74,7 +74,7 @@ async function process_remote_version(url) {
         const json = await response.json();
 	console.log("Response:");
 	console.log($json);
-        var remote_version = json.releases[0].version;
+        var remote_version = json.releases[1].version;
         document.getElementById('remote_chrome_version').innerText += remote_version;
     } catch (error) {
         console.error(error.message);
