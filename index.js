@@ -54,7 +54,10 @@ function process_local_version(ua) {
     var channel = window.location.pathname.split('/')[0].toLowerCase();
     var valid_channels = ["extended", "stable", "beta", "dev", "canary", "ltc", "lts"];
     if ( ! valid_channels.includes(channel) ) {
+        console.log(`invalid derived channel ${channel}. Defaulting to stable.`);
         channel = "stable";
+    } else {
+	console.log(`derived channel to be ${channel} from URL path.`);
     }
     var vh_url = `https://versionhistory.googleapis.com/v1/chrome/platforms/${chrome_platform}/channels/${channel}/versions/all/releases?key=${key}&pageSize=1&orderBy=version desc&filter=endtime=none&fields=releases/version`
     process_remote_version(vh_url);
