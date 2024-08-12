@@ -72,7 +72,7 @@ function process_local_version(ua) {
     }
     var vh_url = `https://versionhistory.googleapis.com/v1/chrome/platforms/${chrome_platform}/channels/${channel}/versions/all/releases?key=${key}&pageSize=1&orderBy=version desc&filter=endtime=none&fields=releases/version`
     process_remote_version(vh_url);
-    document.getElementById("title").insertAdjacentHTML('beforeend', `<br />${chrome_platform} ${channel}`);
+    document.getElementById("your_chrome_version").insertAdjacentHTML('beforeend', ` ${chrome_platform} ${channel}`);
     channels = "";
     for (let i = 0; i < valid_channels.length; i++) {
         if ( i != 0 ) {
