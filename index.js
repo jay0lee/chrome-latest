@@ -72,7 +72,7 @@ function process_local_version(ua) {
     }
     var vh_url = `https://versionhistory.googleapis.com/v1/chrome/platforms/${chrome_platform}/channels/${channel}/versions/all/releases?key=${key}&pageSize=1&orderBy=version desc&filter=endtime=none&fields=releases/version`
     process_remote_version(vh_url);
-    document.getElementById("title").innerHtml += `<br />${chrome_platform} ${channel}`;
+    document.getElementById("title").insertAdjacentHTML('beforeend', `<br />${chrome_platform} ${channel}`);
     footer = "";
     for (let i = 0; i < valid_channels.length; i++) {
         if ( i != 0 ) {
@@ -84,7 +84,7 @@ function process_local_version(ua) {
 	    footer += `<a href="/${valid_channels[i]}">${valid_channels[i]}</a>`;
 	}
     }
-    document.getElementById("footer").innerHtml = footer;
+    document.getElementById("footer").insertAdjacentHTML('beforeend', footer);
 }
 
 async function process_remote_version(url) {
