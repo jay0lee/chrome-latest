@@ -74,7 +74,9 @@ function process_local_version(ua) {
     process_remote_version(vh_url);
     document.getElementById("title").innerText += ` ${chrome_platform} ${channel}`;
     for (let i = 0; i < valid_channels.length; i++) {
-        if ( channel == valid_channels[i] ) {
+        var space = document.createTextNode(" ");
+	document.body.appendChild(space);
+	if ( channel == valid_channels[i] ) {
 	    var plainText = document.createTextNode(channel);
 	    document.body.appendChild(plainText);
 	} else {
