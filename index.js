@@ -72,27 +72,19 @@ function process_local_version(ua) {
     }
     var vh_url = `https://versionhistory.googleapis.com/v1/chrome/platforms/${chrome_platform}/channels/${channel}/versions/all/releases?key=${key}&pageSize=1&orderBy=version desc&filter=endtime=none&fields=releases/version`
     process_remote_version(vh_url);
-    document.getElementById("title").innerText += ` ${chrome_platform} ${channel}`;
+    document.getElementById("title").innerHtml += `<br />${chrome_platform} ${channel}`;
+    footer = "";
     for (let i = 0; i < valid_channels.length; i++) {
         if ( i != 0 ) {
-	    var space = document.createTextNode(" | ");
-	    space.style = "font-size:3vw;"
-	    document.body.appendChild(space);
+	    footer += " | "
 	}
 	if ( channel == valid_channels[i] ) {
-	    var plainText = document.createTextNode(channel);
-	    plainText.style = "font-size:3vw;";
-	    document.body.appendChild(plainText);
+	    footer += channel;
 	} else {
-	    var a = document.createElement("a");
-            var linkText = document.createTextNode(valid_channels[i]);
-            a.appendChild(linkText);
-            a.title = valid_channels[i];
-            a.href = `/${valid_channels[i]}`;
-	    a.style = "font-size:3vw;"
-            document.body.appendChild(a);
+	    footer += `<a href="/${valid_channels[i]}">${valid_channels[i]}</a>`;
 	}
     }
+    document.getelementById("footer").innerHtml = footer;
 }
 
 async function process_remote_version(url) {
