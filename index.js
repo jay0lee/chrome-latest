@@ -75,9 +75,9 @@ function process_local_version(ua) {
     var footer = '';
     for (let i = 0; i < valid_channels.length; i++) {
         if ( channel == valid_channels[i] ) {
-	    footer.append(` ${channel} `)
+	    footer += ` ${channel} `;
 	} else {
-	    footer.append(` <a href="//${valid_channels[i]}>${valid_channels[i]}</a> `);
+	    footer += ` <a href="//${valid_channels[i]}>${valid_channels[i]}</a> `;
 	}
     }
     document.getElementById('footer').innerText = footer;
