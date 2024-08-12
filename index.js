@@ -77,7 +77,7 @@ function process_local_version(ua) {
         if ( channel == valid_channels[i] ) {
 	    footer += ` ${channel} `;
 	} else {
-	    footer += ` <a href="//${valid_channels[i]}>${valid_channels[i]}</a> `;
+	    footer += ` <a href="/${valid_channels[i]}">${valid_channels[i]}</a> `;
 	}
     }
     document.getElementById('footer').innerText = footer;
