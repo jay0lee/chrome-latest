@@ -20,18 +20,25 @@ function process_local_version(ua) {
     ua_arch = ua.architecture.toLowerCase();
     ua_bits = ua.bitness
     console.log(`Chrome Version: ${ua_version} Platform: ${ua_platform} Arch: ${ua_arch} Bits: ${ua_bits}`);
+    // channels that are valid for all platforms
+    var valid_channels = ["stable", "beta", "dev"];
     switch (ua_platform) {
         case "linux":
             chrome_platform = "linux";
 	    break;
         case "android":
 	    chrome_platform = "android";
+	    valid_channels.push("canary");
 	    break;
 	case "ios":
 	    chrome_platform = "ios";
+	    valid_channels.push("canary");
 	    break;
 	case "chromeos":
 	    chrome_platform = "chromeos";
+	    valid_channels.unshift("ltc");
+	    valid_channels.unshift("lts");
+	    valid_channels.push("canary");
 	    break;
 	case "windows":
 	    if (ua_arch == "x86" && ua_bits == 64) {
@@ -41,6 +48,8 @@ function process_local_version(ua) {
 	    } else if (ua_arch.startsWith('arm')) {
 		chrome_platform = "win_arm64";
 	    }
+            valid_channels.unshift("extended");
+	    valid_channels.push("canary");
 	    break;
 	case "macos":
 	    if (ua_arch == "x86") {
@@ -48,19 +57,29 @@ function process_local_version(ua) {
 	    } else if (ua_arch.startsWith('arm')) {
 		chrome_platform = "mac_arm64";
             }
+	    valid_channels.unshift("extended");
+	    valid_channels.push("canary");
+	    break;
     }
     console.log(`Derived Chrome Platform: ${chrome_platform}`)
     var key = "AIzaSyDkSjprpkIA7CmE-yM3RBDbIGA4jnxAurc";
     var channel = window.location.pathname.split('/')[1].toLowerCase();
-    var valid_channels = ["extended", "stable", "beta", "dev", "canary", "ltc", "lts"];
     if ( ! valid_channels.includes(channel) ) {
-        console.log(`invalid derived channel ${channel}. Defaulting to stable.`);
+        console.log(`Channel ${channel} not valid for platform ${chrome_platform}. Defaulting to stable.`);
         channel = "stable";
     } else {
 	console.log(`derived channel to be ${channel} from URL path.`);
     }
     var vh_url = `https://versionhistory.googleapis.com/v1/chrome/platforms/${chrome_platform}/channels/${channel}/versions/all/releases?key=${key}&pageSize=1&orderBy=version desc&filter=endtime=none&fields=releases/version`
     process_remote_version(vh_url);
+    var footer = '';
+    for (let i = 0; i < valid_channels.length; i++) {
+        if ( channel == valid_channels[i] ) {
+	    footer.append(` ${channel} `)
+	else {
+	    footer.append(` <a href="//${valid_channels[i]}>${valid_channels[i]}</a> `);
+	}
+    document.getElementById('footer').innerText = footer;
 }
 
 async function process_remote_version(url) {
