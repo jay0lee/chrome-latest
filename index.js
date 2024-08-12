@@ -76,10 +76,12 @@ function process_local_version(ua) {
     for (let i = 0; i < valid_channels.length; i++) {
         if ( i != 0 ) {
 	    var space = document.createTextNode(" | ");
+	    space.style = "font-size:3vw;"
 	    document.body.appendChild(space);
 	}
 	if ( channel == valid_channels[i] ) {
 	    var plainText = document.createTextNode(channel);
+	    plainText.style = "font-size:3vw;";
 	    document.body.appendChild(plainText);
 	} else {
 	    var a = document.createElement("a");
@@ -87,6 +89,7 @@ function process_local_version(ua) {
             a.appendChild(linkText);
             a.title = valid_channels[i];
             a.href = `/${valid_channels[i]}`;
+	    a.style = "font-size:3vw;"
             document.body.appendChild(a);
 	}
     }
