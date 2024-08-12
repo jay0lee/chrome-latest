@@ -104,23 +104,28 @@ async function process_remote_version(url) {
 	console.log("Response:");
 	console.log(json);
         var remote_version = json.releases[0].version;
-        document.getElementById('remote_chrome_version').innerText += remote_version;
+        document.getElementById('remote_chrome_version').innerText += ` ${remote_version}`;
     } catch (error) {
         console.error(error.message);
     }
     options = {"zeroExtend": true}
     var comp_result = versionCompare(ua_version, remote_version, options);
+    var footer = '';
     switch (comp_result) {
   	case 1:
  	    document.body.style.backgroundColor  = "yellow";
+	    footer += "your version is newer than the latest version. Are you sure you chose the right channel below?";
 	    break;
 	case 0:
 	    document.body.style.backgroundColor = "green";
+	    footer += "you are running the latest version.";
 	    break;
 	case -1:
 	    document.body.style.backgroundColor = "orange";
+	    footer += "you are running an old version of Chrome. Time to upgrade.";
 	    break;
     }
+    document.getElementById("footer").innerText = footer;
 }
 
 function versionCompare(v1, v2, options) {
