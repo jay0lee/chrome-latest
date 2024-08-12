@@ -84,7 +84,7 @@ function process_local_version(ua) {
 	    footer += `<a href="/${valid_channels[i]}">${valid_channels[i]}</a>`;
 	}
     }
-    document.getelementById("footer").innerHtml = footer;
+    document.getElementById("footer").innerHtml = footer;
 }
 
 async function process_remote_version(url) {
