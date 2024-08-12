@@ -73,15 +73,19 @@ function process_local_version(ua) {
     var vh_url = `https://versionhistory.googleapis.com/v1/chrome/platforms/${chrome_platform}/channels/${channel}/versions/all/releases?key=${key}&pageSize=1&orderBy=version desc&filter=endtime=none&fields=releases/version`
     process_remote_version(vh_url);
     document.getElementById("title").innerText += ` ${chrome_platform} ${channel}`;
-    var footer = '';
     for (let i = 0; i < valid_channels.length; i++) {
         if ( channel == valid_channels[i] ) {
-	    footer += ` ${channel} `;
+	    var plainText = document.createTextNode(channel);
+	    document.body.appendChild(plainText);
 	} else {
-	    footer += ` <a href="/${valid_channels[i]}">${valid_channels[i]}</a> `;
+	    var a = document.createElement("a");
+            var linkText = document.createTextNode($valid_channels[i]);
+            a.appendChild(linkText);
+            a.title = $valid_channels[i];
+            a.href = `/${valid_channels[i]}`;
+            document.body.appendChild(a);
 	}
     }
-    document.getElementById("footer").appendChild(footer);
 }
 
 async function process_remote_version(url) {
