@@ -79,6 +79,7 @@ function process_local_version(ua) {
 	} else {
 	    footer.append(` <a href="//${valid_channels[i]}>${valid_channels[i]}</a> `);
 	}
+    }
     document.getElementById('footer').innerText = footer;
 }
 
