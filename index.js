@@ -72,6 +72,7 @@ function process_local_version(ua) {
     }
     var vh_url = `https://versionhistory.googleapis.com/v1/chrome/platforms/${chrome_platform}/channels/${channel}/versions/all/releases?key=${key}&pageSize=1&orderBy=version desc&filter=endtime=none&fields=releases/version`
     process_remote_version(vh_url);
+    document.getElementById("title").innerText += `${chrome_platform} ${channel}`;
     var footer = '';
     for (let i = 0; i < valid_channels.length; i++) {
         if ( channel == valid_channels[i] ) {
