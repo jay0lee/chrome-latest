@@ -73,18 +73,18 @@ function process_local_version(ua) {
     var vh_url = `https://versionhistory.googleapis.com/v1/chrome/platforms/${chrome_platform}/channels/${channel}/versions/all/releases?key=${key}&pageSize=1&orderBy=version desc&filter=endtime=none&fields=releases/version`
     process_remote_version(vh_url);
     document.getElementById("title").insertAdjacentHTML('beforeend', `<br />${chrome_platform} ${channel}`);
-    footer = "";
+    channels = "";
     for (let i = 0; i < valid_channels.length; i++) {
         if ( i != 0 ) {
-	    footer += " | "
+	    channels += " | "
 	}
 	if ( channel == valid_channels[i] ) {
-	    footer += channel;
+	    channels += channel;
 	} else {
-	    footer += `<a href="/${valid_channels[i]}">${valid_channels[i]}</a>`;
+	    channels += `<a href="/${valid_channels[i]}">${valid_channels[i]}</a>`;
 	}
     }
-    document.getElementById("footer").insertAdjacentHTML('beforeend', footer);
+    document.getElementById("channels").insertAdjacentHTML('beforeend', channels);
 }
 
 async function process_remote_version(url) {
@@ -105,22 +105,22 @@ async function process_remote_version(url) {
     }
     options = {"zeroExtend": true}
     var comp_result = versionCompare(ua_version, remote_version, options);
-    var footer = '';
+    var status = '';
     switch (comp_result) {
   	case 1:
  	    document.body.style.backgroundColor  = "yellow";
-	    footer += "your version is newer than the latest version. Are you sure you chose the right channel below?";
+	    status += "your version is newer than the latest version. Are you sure you chose the right channel below?";
 	    break;
 	case 0:
 	    document.body.style.backgroundColor = "green";
-	    footer += "you are running the latest version.";
+	    status += "you are running the latest version.";
 	    break;
 	case -1:
 	    document.body.style.backgroundColor = "orange";
-	    footer += "you are running an old version of Chrome. Time to upgrade.";
+	    status += "you are running an old version of Chrome. Time to upgrade.";
 	    break;
     }
-    document.getElementById("footer").innerText = footer;
+    document.getElementById("status").innerText = status;
 }
 
 function versionCompare(v1, v2, options) {
