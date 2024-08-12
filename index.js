@@ -125,6 +125,7 @@ async function process_remote_version(url) {
 	    footer += "you are running an old version of Chrome. Time to upgrade.";
 	    break;
     }
+    footer += "<br>";
     document.getElementById("footer").innerText = footer;
 }
 
