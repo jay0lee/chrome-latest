@@ -80,7 +80,7 @@ function process_local_version(ua) {
 	    footer += ` <a href="/${valid_channels[i]}">${valid_channels[i]}</a> `;
 	}
     }
-    document.getElementById("parentID").appendChild(footer);
+    document.getElementById("footer").appendChild(footer);
 }
 
 async function process_remote_version(url) {
