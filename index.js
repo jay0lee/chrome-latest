@@ -79,9 +79,9 @@ function process_local_version(ua) {
 	    document.body.appendChild(plainText);
 	} else {
 	    var a = document.createElement("a");
-            var linkText = document.createTextNode($valid_channels[i]);
+            var linkText = document.createTextNode(valid_channels[i]);
             a.appendChild(linkText);
-            a.title = $valid_channels[i];
+            a.title = valid_channels[i];
             a.href = `/${valid_channels[i]}`;
             document.body.appendChild(a);
 	}
