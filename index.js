@@ -76,7 +76,7 @@ function process_local_version(ua) {
     for (let i = 0; i < valid_channels.length; i++) {
         if ( channel == valid_channels[i] ) {
 	    footer.append(` ${channel} `)
-	else {
+	} else {
 	    footer.append(` <a href="//${valid_channels[i]}>${valid_channels[i]}</a> `);
 	}
     document.getElementById('footer').innerText = footer;
