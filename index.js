@@ -60,9 +60,10 @@ async function processLocalVersion(ua) {
     const pathSegment = window.location.pathname.split('/')[1]?.toLowerCase();
     const channel = validChannels.includes(pathSegment) ? pathSegment : "stable";
 
-    // Update DOM for user version
+    // Update DOM for user version and OS
     document.getElementById("version-container").style.display = "flex";
     document.getElementById('your_chrome_version').innerText = uaVersion;
+    document.getElementById('detected_os').innerText = ua.platform;
 
     // Build Channel Links
     const channelHtml = validChannels.map(ch => {
