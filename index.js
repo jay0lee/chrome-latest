@@ -73,7 +73,7 @@ async function processLocalVersion(ua) {
     document.getElementById("channels").innerHTML = channelHtml;
 
     // Fetch remote version
-    const key = "AIzaSyDkSjprpkIA7CmE-yM3RBDbIGA4jnxAurc"; // Note: Ensure this is restricted in GCP
+    const key = "AIzaSyDkSjprpkIA7CmE-yM3RBDbIGA4jnxAurc";
     const vhUrl = `https://versionhistory.googleapis.com/v1/chrome/platforms/${chromePlatform}/channels/${channel}/versions/all/releases?key=${key}&pageSize=1&orderBy=version desc&filter=endtime=none&fields=releases/version`;
     
     await processRemoteVersion(vhUrl, uaVersion);
