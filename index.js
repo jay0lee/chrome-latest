@@ -1,141 +1,134 @@
-var ua_version;
-var ua_arch;
-var ua_bits;
-var chrome_platform;
-
-navigator.userAgentData.getHighEntropyValues(["architecture",
-                                              "bitness",
-	                                      "platform",
-	                                      "platformVersion",
-	                                      "fullVersionList",]).then(process_local_version);
-
-function process_local_version(ua) {
-    for (let i = 0; i < ua.fullVersionList.length; i++) {
-        if ( ua.fullVersionList[i].brand == "Google Chrome" ) {
-	    ua_version = ua.fullVersionList[i].version;
-	}
+// Wrap in an IIFE to avoid polluting the global namespace
+(async function init() {
+    if (!navigator.userAgentData) {
+        document.getElementById("status").innerText = "Your browser does not support the required User-Agent Client Hints API. Please visit using a Chromium-based browser.";
+        return;
     }
-    document.getElementById('your_chrome_version').innerText += ` ${ua_version}`;
-    ua_platform = ua.platform.toLowerCase().replace(/\s/g, '');
-    ua_arch = ua.architecture.toLowerCase();
-    ua_bits = ua.bitness
-    console.log(`Chrome Version: ${ua_version} Platform: ${ua_platform} Arch: ${ua_arch} Bits: ${ua_bits}`);
-    // channels that are valid for all platforms
-    var valid_channels = ["stable", "beta", "dev"];
-    switch (ua_platform) {
+
+    try {
+        const ua = await navigator.userAgentData.getHighEntropyValues([
+            "architecture", "bitness", "platform", "platformVersion", "fullVersionList"
+        ]);
+        await processLocalVersion(ua);
+    } catch (error) {
+        document.getElementById("status").innerText = `Error reading local version: ${error.message}`;
+        console.error(error);
+    }
+})();
+
+async function processLocalVersion(ua) {
+    // Look for Google Chrome, or fallback to the first major brand if Chrome isn't found (e.g., Edge/Brave)
+    const browserInfo = ua.fullVersionList.find(b => b.brand === "Google Chrome") || ua.fullVersionList[0];
+    const uaVersion = browserInfo ? browserInfo.version : "Unknown";
+    
+    const uaPlatform = ua.platform.toLowerCase().replace(/\s/g, '');
+    const uaArch = ua.architecture.toLowerCase();
+    const uaBits = ua.bitness;
+    
+    console.log(`Version: ${uaVersion} | Platform: ${uaPlatform} | Arch: ${uaArch} | Bits: ${uaBits}`);
+
+    let chromePlatform = uaPlatform;
+    const validChannels = ["stable", "beta", "dev"];
+
+    switch (uaPlatform) {
         case "linux":
-            chrome_platform = "linux";
-	    break;
+            break;
         case "android":
-	    chrome_platform = "android";
-	    valid_channels.push("canary");
-	    break;
-	case "ios":
-	    chrome_platform = "ios";
-	    valid_channels.push("canary");
-	    break;
-	case "chromeos":
-	    chrome_platform = "chromeos";
-	    valid_channels.unshift("ltc");
-	    valid_channels.unshift("lts");
-	    valid_channels.push("canary");
-	    break;
-	case "windows":
-	    if (ua_arch == "x86" && ua_bits == 64) {
-	        chrome_platform = "win64";
-	    } else if (ua_arch == "x86" && ua_bits == 32) {
-	        chrome_platform = "win";
-	    } else if (ua_arch.startsWith('arm')) {
-		chrome_platform = "win_arm64";
-	    }
-            valid_channels.unshift("extended");
-	    valid_channels.push("canary");
-	    break;
-	case "macos":
-	    if (ua_arch == "x86") {
-	        chrome_platform = "mac";
-	    } else if (ua_arch.startsWith('arm')) {
-		chrome_platform = "mac_arm64";
-            }
-	    valid_channels.unshift("extended");
-	    valid_channels.push("canary");
-	    break;
+        case "ios":
+            validChannels.push("canary");
+            break;
+        case "chromeos":
+            validChannels.unshift("lts", "ltc");
+            validChannels.push("canary");
+            break;
+        case "windows":
+            if (uaArch === "x86" && uaBits === "64") chromePlatform = "win64";
+            else if (uaArch === "x86" && uaBits === "32") chromePlatform = "win";
+            else if (uaArch.startsWith('arm')) chromePlatform = "win_arm64";
+            validChannels.unshift("extended");
+            validChannels.push("canary");
+            break;
+        case "macos":
+            if (uaArch === "x86") chromePlatform = "mac";
+            else if (uaArch.startsWith('arm')) chromePlatform = "mac_arm64";
+            validChannels.unshift("extended");
+            validChannels.push("canary");
+            break;
     }
-    console.log(`Derived Chrome Platform: ${chrome_platform}`)
-    var key = "AIzaSyDkSjprpkIA7CmE-yM3RBDbIGA4jnxAurc";
-    var channel = window.location.pathname.split('/')[1].toLowerCase();
-    if ( ! valid_channels.includes(channel) ) {
-        console.log(`Channel ${channel} not valid for platform ${chrome_platform}. Defaulting to stable.`);
-        channel = "stable";
-    } else {
-	console.log(`derived channel to be ${channel} from URL path.`);
-    }
-    var vh_url = `https://versionhistory.googleapis.com/v1/chrome/platforms/${chrome_platform}/channels/${channel}/versions/all/releases?key=${key}&pageSize=1&orderBy=version desc&filter=endtime=none&fields=releases/version`
-    process_remote_version(vh_url);
-    document.getElementById("your_chrome_version").insertAdjacentHTML('beforeend', ` ${chrome_platform} ${channel}`);
-    channels = "";
-    for (let i = 0; i < valid_channels.length; i++) {
-        if ( i != 0 ) {
-	    channels += " | "
-	}
-	if ( channel == valid_channels[i] ) {
-	    channels += channel;
-	} else {
-	    channels += `<a href="/${valid_channels[i]}">${valid_channels[i]}</a>`;
-	}
-    }
-    document.getElementById("channels").insertAdjacentHTML('beforeend', channels);
+
+    // Determine channel from URL or default to stable
+    const pathSegment = window.location.pathname.split('/')[1]?.toLowerCase();
+    const channel = validChannels.includes(pathSegment) ? pathSegment : "stable";
+
+    // Update DOM for user version
+    document.getElementById("version-container").style.display = "flex";
+    document.getElementById('your_chrome_version').innerText = uaVersion;
+
+    // Build Channel Links
+    const channelHtml = validChannels.map(ch => {
+        return ch === channel 
+            ? `<span class="active">${ch}</span>` 
+            : `<a href="/${ch}">${ch}</a>`;
+    }).join(" | ");
+    document.getElementById("channels").innerHTML = channelHtml;
+
+    // Fetch remote version
+    const key = "AIzaSyDkSjprpkIA7CmE-yM3RBDbIGA4jnxAurc"; // Note: Ensure this is restricted in GCP
+    const vhUrl = `https://versionhistory.googleapis.com/v1/chrome/platforms/${chromePlatform}/channels/${channel}/versions/all/releases?key=${key}&pageSize=1&orderBy=version desc&filter=endtime=none&fields=releases/version`;
+    
+    await processRemoteVersion(vhUrl, uaVersion);
 }
 
-async function process_remote_version(url) {
-    console.log(`Fetching URL ${url}...`)
+async function processRemoteVersion(url, localVersion) {
     try {
         const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error(`Response status: ${response.status}`);
+        if (!response.ok) throw new Error(`API Error: ${response.status}`);
+        
+        const json = await response.json();
+        const remoteVersion = json.releases?.[0]?.version;
+
+        if (!remoteVersion) {
+            throw new Error("No release data found for this channel/platform combination.");
         }
 
-        const json = await response.json();
-	console.log("Response:");
-	console.log(json);
-        var remote_version = json.releases[0].version;
-        document.getElementById('remote_chrome_version').innerText += ` ${remote_version}`;
+        document.getElementById('remote_chrome_version').innerText = remoteVersion;
+
+        const compResult = versionCompare(localVersion, remoteVersion, { zeroExtend: true });
+        const statusEl = document.getElementById("status");
+
+        if (compResult === 1) {
+            document.body.className = "status-newer";
+            statusEl.innerText = "Your version is newer than the latest version. Are you sure you chose the right channel?";
+            statusEl.style.color = "#b06000";
+            statusEl.style.backgroundColor = "#fef7e0";
+        } else if (compResult === 0) {
+            document.body.className = "status-latest";
+            statusEl.innerText = "You are running the latest version.";
+            statusEl.style.color = "#0d652d";
+            statusEl.style.backgroundColor = "#e6f4ea";
+        } else {
+            document.body.className = "status-old";
+            statusEl.innerText = "You are running an old version of Chrome. Time to upgrade.";
+            statusEl.style.color = "#c5221f";
+            statusEl.style.backgroundColor = "#fce8e6";
+        }
     } catch (error) {
-        console.error(error.message);
+        document.getElementById("status").innerText = `Error: ${error.message}`;
+        console.error(error);
     }
-    options = {"zeroExtend": true}
-    var comp_result = versionCompare(ua_version, remote_version, options);
-    var status = '';
-    switch (comp_result) {
-  	case 1:
- 	    document.body.style.backgroundColor  = "yellow";
-	    status += "your version is newer than the latest version. Are you sure you chose the right channel below?";
-	    break;
-	case 0:
-	    document.body.style.backgroundColor = "green";
-	    status += "you are running the latest version.";
-	    break;
-	case -1:
-	    document.body.style.backgroundColor = "orange";
-	    status += "you are running an old version of Chrome. Time to upgrade.";
-	    break;
-    }
-    document.getElementById("status").innerText = status;
 }
 
 function versionCompare(v1, v2, options) {
-    var lexicographical = options && options.lexicographical,
-        zeroExtend = options && options.zeroExtend,
-        v1parts = v1.split('.'),
-        v2parts = v2.split('.');
+    let lexicographical = options?.lexicographical;
+    let zeroExtend = options?.zeroExtend;
+    let v1parts = v1.split('.');
+    let v2parts = v2.split('.');
 
     function isValidPart(x) {
         return (lexicographical ? /^\d+[A-Za-z]*$/ : /^\d+$/).test(x);
     }
 
-    if (!v1parts.every(isValidPart) || !v2parts.every(isValidPart)) {
-        return NaN;
-    }
+    if (!v1parts.every(isValidPart) || !v2parts.every(isValidPart)) return NaN;
 
     if (zeroExtend) {
         while (v1parts.length < v2parts.length) v1parts.push("0");
@@ -147,25 +140,11 @@ function versionCompare(v1, v2, options) {
         v2parts = v2parts.map(Number);
     }
 
-    for (var i = 0; i < v1parts.length; ++i) {
-        if (v2parts.length == i) {
-            return 1;
-        }
-
-        if (v1parts[i] == v2parts[i]) {
-            continue;
-        }
-        else if (v1parts[i] > v2parts[i]) {
-            return 1;
-        }
-        else {
-            return -1;
-        }
+    for (let i = 0; i < v1parts.length; ++i) {
+        if (v2parts.length === i) return 1;
+        if (v1parts[i] === v2parts[i]) continue;
+        return v1parts[i] > v2parts[i] ? 1 : -1;
     }
 
-    if (v1parts.length != v2parts.length) {
-        return -1;
-    }
-
-    return 0;
+    return v1parts.length !== v2parts.length ? -1 : 0;
 }
