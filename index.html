@@ -1,23 +1,160 @@
 <!DOCTYPE html>
-<html lang="en-US" class="no-js">
-  <head>
+<html lang="en-US">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Latest Chrome</title>
     <style>
-        body {font-family: arial;}
+        :root {
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-main: #202124;
+            --text-muted: #5f6368;
+            --border-color: #dadce0;
+            --link-color: #1a73e8;
+            --status-bg: #e8f0fe;
+            --status-text: #1967d2;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            transition: background-color 0.3s ease;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-top: 0;
+            margin-bottom: 30px;
+            color: var(--text-main);
+        }
+
+        .version-box {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 25px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+
+        .version-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .version-label {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+
+        .version-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        #status {
+            font-size: 1.1rem;
+            font-weight: 500;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: var(--status-bg);
+            color: var(--status-text);
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        #channels {
+            margin-bottom: 30px;
+            font-size: 1rem;
+        }
+
+        #channels a {
+            text-decoration: none;
+            color: var(--link-color);
+            padding: 5px 10px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        #channels a:hover {
+            background-color: rgba(26, 115, 232, 0.1);
+        }
+
+        #channels span.active {
+            font-weight: bold;
+            color: var(--text-main);
+            padding: 5px 10px;
+        }
+
+        .footer {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+            border-top: 1px solid var(--border-color);
+            padding-top: 20px;
+        }
+
+        .footer a {
+            color: var(--link-color);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Dynamic Status Colors */
+        body.status-latest { background-color: #e6f4ea; }
+        body.status-old { background-color: #fce8e6; }
+        body.status-newer { background-color: #fef7e0; }
     </style>
-  </head>
-  <body>
-    <div id="latest-chrome">
+</head>
+<body>
+    <div class="container">
+        <h1>Latest Chrome</h1>
+        
+        <div class="version-box" id="version-container" style="display: none;">
+            <div class="version-item">
+                <span class="version-label">You</span>
+                <span class="version-value" id="your_chrome_version">--</span>
+            </div>
+            <div class="version-item">
+                <span class="version-label">Latest</span>
+                <span class="version-value" id="remote_chrome_version">--</span>
+            </div>
+        </div>
+
+        <div id="status">Checking browser version...</div>
+        <div id="channels"></div>
+
+        <div class="footer">
+            Latest Chrome uses the <a href="https://developer.chrome.com/docs/web-platform/versionhistory/guide" target="_blank">Chrome Version History API</a> and is <a href="https://github.com/jay0lee/chrome-latest" target="_blank">hosted on GitHub</a>.<br><br>
+            This is an unofficial experimental page and the information may be wrong.
+        </div>
     </div>
-    <div id="header"></div>
-    <div id="title" style="font-size:8vw;">Latest Chrome</div>
-    <div id="your_chrome_version" style="font-size:5vw;">You:</div>
-    <div id="remote_chrome_version" style="font-size:5vw;">Latest:</div>
-    <div id="status" style="font-size:7vw;"></div>
-    <div id="channels" style="font-size:4vw;"></div>
-    <div id="footer" style="font-size:2vw;">Latest Chrome uses the <a href="https://developer.chrome.com/docs/web-platform/versionhistory/guide">Chrome Version History API</a> and is <a href="https://github.com/jay0lee/chrome-latest">hosted on GitHub</a>. This is an unofficial experimental page and the information may be wrong.</div>
+
     <script src="/index.js"></script>
-  </body>
+</body>
 </html>
