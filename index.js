@@ -39,7 +39,8 @@ async function processLocalVersion(ua) {
             break;
         case "chromeos":
             validChannels.unshift("lts", "ltc");
-            validChannels.push("canary");
+            // API doesn't return chromeos canary
+            // validChannels.push("canary");
             break;
         case "windows":
             if (uaArch === "x86" && uaBits === "64") chromePlatform = "win64";
