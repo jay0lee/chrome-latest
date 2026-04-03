@@ -12,8 +12,6 @@
             --text-muted: #5f6368;
             --border-color: #dadce0;
             --link-color: #1a73e8;
-            --status-bg: #e8f0fe;
-            --status-text: #1967d2;
         }
 
         body {
@@ -59,6 +57,7 @@
         .version-item {
             display: flex;
             flex-direction: column;
+            flex: 1;
         }
 
         .version-label {
@@ -72,6 +71,7 @@
         .version-value {
             font-size: 1.5rem;
             font-weight: 600;
+            word-break: break-word;
         }
 
         #status {
@@ -79,23 +79,31 @@
             font-weight: 500;
             padding: 15px;
             border-radius: 8px;
-            background-color: var(--status-bg);
-            color: var(--status-text);
             margin-bottom: 25px;
             line-height: 1.5;
+            background-color: #f1f3f4; /* Default loading background */
+            color: var(--text-main);
         }
 
         #channels {
             margin-bottom: 30px;
             font-size: 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        #channels a, #channels span.active {
+            text-decoration: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            transition: all 0.2s;
         }
 
         #channels a {
-            text-decoration: none;
             color: var(--link-color);
-            padding: 5px 10px;
-            border-radius: 4px;
-            transition: background-color 0.2s;
+            background-color: transparent;
         }
 
         #channels a:hover {
@@ -105,7 +113,8 @@
         #channels span.active {
             font-weight: bold;
             color: var(--text-main);
-            padding: 5px 10px;
+            background-color: #e8eaed;
+            border: 1px solid var(--border-color);
         }
 
         .footer {
@@ -125,22 +134,32 @@
             text-decoration: underline;
         }
         
-        /* Dynamic Status Colors */
-        body.status-latest { background-color: #e6f4ea; }
-        body.status-old { background-color: #fce8e6; }
-        body.status-newer { background-color: #fef7e0; }
-
-        /* Prevent long version strings from overflowing */
-        .version-value {
-            font-size: 1.5rem;
-            font-weight: 600;
-            word-break: break-word; 
+        /* Dynamic Status Colors - Bolder */
+        body.status-latest { background-color: #c8e6c9; }
+        body.status-latest #status { 
+            background-color: #81c784; 
+            color: #1b5e20; 
+            border: 1px solid #66bb6a;
+        }
+        
+        body.status-old { background-color: #ffcdd2; }
+        body.status-old #status { 
+            background-color: #e57373; 
+            color: #b71c1c; 
+            border: 1px solid #ef5350;
+        }
+        
+        body.status-newer { background-color: #ffe082; }
+        body.status-newer #status { 
+            background-color: #ffca28; 
+            color: #8f6000; 
+            border: 1px solid #ffb300;
         }
 
         /* Mobile layout optimizations */
         @media (max-width: 600px) {
             .container {
-                padding: 20px; /* Slightly less padding on small screens */
+                padding: 20px;
             }
 
             h1 {
@@ -148,26 +167,17 @@
             }
 
             .version-box {
-                flex-direction: column; /* Stack the items vertically */
-                gap: 20px; /* Add space between the stacked items */
+                flex-direction: column;
+                gap: 20px;
                 padding: 15px;
             }
 
             .version-value {
-                font-size: 1.25rem; /* Slightly smaller font for the numbers */
+                font-size: 1.25rem;
             }
-            
-            #channels {
-                display: flex;
-                flex-wrap: wrap;
-                justify-content: center;
-                gap: 10px;
-            }
-            
-            /* Remove the pipe separators on mobile since we are wrapping */
-            #channels a, #channels span.active {
-                background: var(--bg-color);
-                border: 1px solid var(--border-color);
+
+            #channels a {
+                border: 1px solid transparent;
             }
         }
     </style>
@@ -181,7 +191,6 @@
                 <span class="version-label">OS</span>
                 <span class="version-value" id="detected_os">--</span>
             </div>
-            
             <div class="version-item">
                 <span class="version-label">You</span>
                 <span class="version-value" id="your_chrome_version">--</span>
