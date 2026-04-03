@@ -129,6 +129,47 @@
         body.status-latest { background-color: #e6f4ea; }
         body.status-old { background-color: #fce8e6; }
         body.status-newer { background-color: #fef7e0; }
+
+        /* Prevent long version strings from overflowing */
+        .version-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            word-break: break-word; 
+        }
+
+        /* Mobile layout optimizations */
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px; /* Slightly less padding on small screens */
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .version-box {
+                flex-direction: column; /* Stack the items vertically */
+                gap: 20px; /* Add space between the stacked items */
+                padding: 15px;
+            }
+
+            .version-value {
+                font-size: 1.25rem; /* Slightly smaller font for the numbers */
+            }
+            
+            #channels {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 10px;
+            }
+            
+            /* Remove the pipe separators on mobile since we are wrapping */
+            #channels a, #channels span.active {
+                background: var(--bg-color);
+                border: 1px solid var(--border-color);
+            }
+        }
     </style>
 </head>
 <body>
