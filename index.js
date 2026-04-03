@@ -1,7 +1,6 @@
-// Wrap in an IIFE to avoid polluting the global namespace
 (async function init() {
     if (!navigator.userAgentData) {
-        document.getElementById("status").innerText = "Your browser does not support the required User-Agent Client Hints API. Please visit using a Chromium-based browser.";
+        document.getElementById("status").innerText = "Your browser does not support the required API. Please visit using a modern Chromium-based browser.";
         return;
     }
 
@@ -16,8 +15,29 @@
     }
 })();
 
+async function autoDetectChannel(chromePlatform, validChannels, uaVersion, apiKey) {
+    document.getElementById("status").innerText = "Auto-detecting release channel...";
+    const userMajor = uaVersion.split('.')[0];
+    
+    const promises = validChannels.map(async (channel) => {
+        const url = `https://versionhistory.googleapis.com/v1/chrome/platforms/${chromePlatform}/channels/${channel}/versions/all/releases?key=${apiKey}&pageSize=1&orderBy=version desc&filter=endtime=none&fields=releases/version`;
+        try {
+            const res = await fetch(url);
+            const data = await res.json();
+            const remoteVersion = data.releases?.[0]?.version;
+            return { channel, major: remoteVersion?.split('.')[0] };
+        } catch (e) {
+            return null;
+        }
+    });
+
+    const results = await Promise.all(promises);
+    const matched = results.find(r => r && r.major === userMajor);
+    
+    return matched ? matched.channel : "stable"; 
+}
+
 async function processLocalVersion(ua) {
-    // Look for Google Chrome, or fallback to the first major brand if Chrome isn't found (e.g., Edge/Brave)
     const browserInfo = ua.fullVersionList.find(b => b.brand === "Google Chrome") || ua.fullVersionList[0];
     const uaVersion = browserInfo ? browserInfo.version : "Unknown";
     
@@ -39,8 +59,6 @@ async function processLocalVersion(ua) {
             break;
         case "chromeos":
             validChannels.unshift("lts", "ltc");
-            // API doesn't return chromeos canary
-            // validChannels.push("canary");
             break;
         case "windows":
             if (uaArch === "x86" && uaBits === "64") chromePlatform = "win64";
@@ -57,25 +75,29 @@ async function processLocalVersion(ua) {
             break;
     }
 
-    // Determine channel from URL or default to stable
-    const pathSegment = window.location.pathname.split('/')[1]?.toLowerCase();
-    const channel = validChannels.includes(pathSegment) ? pathSegment : "stable";
-
-    // Update DOM for user version and OS
     document.getElementById("version-container").style.display = "flex";
-    document.getElementById('your_chrome_version').innerText = uaVersion;
-    document.getElementById('detected_os').innerText = ua.platform;
+    document.getElementById("your_chrome_version").innerText = uaVersion;
+    document.getElementById("detected_os").innerText = ua.platform;
 
-    // Build Channel Links
+    const key = "AIzaSyDkSjprpkIA7CmE-yM3RBDbIGA4jnxAurc";
+    let pathSegment = window.location.pathname.split('/')[1]?.toLowerCase();
+    let channel;
+
+    if (validChannels.includes(pathSegment)) {
+        channel = pathSegment;
+    } else {
+        channel = await autoDetectChannel(chromePlatform, validChannels, uaVersion, key);
+        window.history.replaceState(null, "", `/${channel}`);
+    }
+
+    // Build Channel Links (using CSS flexbox for layout instead of text strings)
     const channelHtml = validChannels.map(ch => {
         return ch === channel 
             ? `<span class="active">${ch}</span>` 
             : `<a href="/${ch}">${ch}</a>`;
-    }).join(" | ");
+    }).join("");
     document.getElementById("channels").innerHTML = channelHtml;
 
-    // Fetch remote version
-    const key = "AIzaSyDkSjprpkIA7CmE-yM3RBDbIGA4jnxAurc";
     const vhUrl = `https://versionhistory.googleapis.com/v1/chrome/platforms/${chromePlatform}/channels/${channel}/versions/all/releases?key=${key}&pageSize=1&orderBy=version desc&filter=endtime=none&fields=releases/version`;
     
     await processRemoteVersion(vhUrl, uaVersion);
@@ -101,18 +123,12 @@ async function processRemoteVersion(url, localVersion) {
         if (compResult === 1) {
             document.body.className = "status-newer";
             statusEl.innerText = "Your version is newer than the latest version. Are you sure you chose the right channel?";
-            statusEl.style.color = "#b06000";
-            statusEl.style.backgroundColor = "#fef7e0";
         } else if (compResult === 0) {
             document.body.className = "status-latest";
             statusEl.innerText = "You are running the latest version.";
-            statusEl.style.color = "#0d652d";
-            statusEl.style.backgroundColor = "#e6f4ea";
         } else {
             document.body.className = "status-old";
             statusEl.innerText = "You are running an old version of Chrome. Time to upgrade.";
-            statusEl.style.color = "#c5221f";
-            statusEl.style.backgroundColor = "#fce8e6";
         }
     } catch (error) {
         document.getElementById("status").innerText = `Error: ${error.message}`;
