@@ -15,28 +15,6 @@
     }
 })();
 
-async function autoDetectChannel(chromePlatform, validChannels, uaVersion, apiKey) {
-    document.getElementById("status").innerText = "Auto-detecting release channel...";
-    const userMajor = uaVersion.split('.')[0];
-    
-    const promises = validChannels.map(async (channel) => {
-        const url = `https://versionhistory.googleapis.com/v1/chrome/platforms/${chromePlatform}/channels/${channel}/versions/all/releases?key=${apiKey}&pageSize=1&orderBy=version desc&filter=endtime=none&fields=releases/version`;
-        try {
-            const res = await fetch(url);
-            const data = await res.json();
-            const remoteVersion = data.releases?.[0]?.version;
-            return { channel, major: remoteVersion?.split('.')[0] };
-        } catch (e) {
-            return null;
-        }
-    });
-
-    const results = await Promise.all(promises);
-    const matched = results.find(r => r && r.major === userMajor);
-    
-    return matched ? matched.channel : "stable"; 
-}
-
 async function processLocalVersion(ua) {
     const browserInfo = ua.fullVersionList.find(b => b.brand === "Google Chrome") || ua.fullVersionList[0];
     const uaVersion = browserInfo ? browserInfo.version : "Unknown";
@@ -81,14 +59,9 @@ async function processLocalVersion(ua) {
 
     const key = "AIzaSyDkSjprpkIA7CmE-yM3RBDbIGA4jnxAurc";
     let pathSegment = window.location.pathname.split('/')[1]?.toLowerCase();
-    let channel;
-
-    if (validChannels.includes(pathSegment)) {
-        channel = pathSegment;
-    } else {
-        channel = await autoDetectChannel(chromePlatform, validChannels, uaVersion, key);
-        window.history.replaceState(null, "", `/${channel}`);
-    }
+    
+    // Default to stable if the URL path doesn't match a valid channel
+    let channel = validChannels.includes(pathSegment) ? pathSegment : "stable";
 
     // Build Channel Links (using CSS flexbox for layout instead of text strings)
     const channelHtml = validChannels.map(ch => {
