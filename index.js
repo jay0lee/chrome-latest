@@ -71,22 +71,25 @@ async function processLocalVersion(ua) {
     }).join("");
     document.getElementById("channels").innerHTML = channelHtml;
 
-    const vhUrl = `https://versionhistory.googleapis.com/v1/chrome/platforms/${chromePlatform}/channels/${channel}/versions/all/releases?key=${key}&pageSize=1&orderBy=version desc&filter=endtime=none&fields=releases/version`;
+    const vhUrl = `https://versionhistory.googleapis.com/v1/chrome/platforms/${chromePlatform}/channels/${channel}/versions/all/releases?key=${key}&order_by=platform%20desc,channel%20asc,starttime%20desc&filter=endtime=none`;
     
-    await processRemoteVersion(vhUrl, uaVersion);
+    await processRemoteVersion(vhUrl, uaVersion, channel);
 }
 
-async function processRemoteVersion(url, localVersion) {
+async function processRemoteVersion(url, localVersion, channel) {
     try {
         const response = await fetch(url);
         if (!response.ok) throw new Error(`API Error: ${response.status}`);
         
         const json = await response.json();
-        const remoteVersion = json.releases?.[0]?.version;
+        const releases = json.releases || [];
 
-        if (!remoteVersion) {
+        if (releases.length === 0) {
             throw new Error("No release data found for this channel/platform combination.");
         }
+
+        const latestRelease = releases.find(r => r.fraction === undefined || r.fraction >= 0.01);
+        const remoteVersion = latestRelease ? latestRelease.version : releases[0].version;
 
         document.getElementById('remote_chrome_version').innerText = remoteVersion;
 
@@ -94,11 +97,23 @@ async function processRemoteVersion(url, localVersion) {
         const statusEl = document.getElementById("status");
 
         if (compResult === 1) {
-            document.body.className = "status-newer";
-            statusEl.innerText = "Your version is newer than the latest version. Are you sure you chose the right channel?";
+            const isPreview = releases.some(r => r.version === localVersion && r.fraction !== undefined && r.fraction < 0.01);
+            if (isPreview) {
+                document.body.className = "status-latest";
+                statusEl.innerText = "You are running the latest stable preview.";
+            } else {
+                document.body.className = "status-newer";
+                statusEl.innerText = "Your version is newer than the latest version. Are you sure you chose the right channel?";
+            }
         } else if (compResult === 0) {
             document.body.className = "status-latest";
-            statusEl.innerText = "You are running the latest version.";
+            const absoluteLatest = releases[0].version;
+            const previewResult = versionCompare(absoluteLatest, remoteVersion, { zeroExtend: true });
+            if (previewResult === 1) {
+                statusEl.innerText = `You are running the latest version. Version ${absoluteLatest} ${channel || "stable"} preview is released but not available to you just yet.`;
+            } else {
+                statusEl.innerText = "You are running the latest version.";
+            }
         } else {
             document.body.className = "status-old";
             statusEl.innerText = "You are running an old version of Chrome. Time to upgrade.";
