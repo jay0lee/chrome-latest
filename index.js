@@ -88,6 +88,8 @@ async function processRemoteVersion(url, localVersion, channel) {
             throw new Error("No release data found for this channel/platform combination.");
         }
 
+        releases.sort((a, b) => versionCompare(b.version, a.version, { zeroExtend: true }));
+
         const latestRelease = releases.find(r => r.fraction === undefined || r.fraction >= 0.01);
         const remoteVersion = latestRelease ? latestRelease.version : releases[0].version;
 
