@@ -114,7 +114,7 @@ async function processRemoteVersion(url, localVersion, channel) {
             const absoluteLatest = releases[0].version;
             const previewResult = versionCompare(absoluteLatest, remoteVersion, { zeroExtend: true });
             if (previewResult === 1) {
-                statusEl.innerText = `You are running the latest version. Version ${absoluteLatest} ${channel || "stable"} preview is released but not available to you just yet.`;
+                statusEl.innerText = `You are running the latest version. Early ${channel || "stable"} ${absoluteLatest} has begun but may not be available for you yet.`;
             } else {
                 statusEl.innerText = "You are running the latest version.";
             }
