@@ -93,7 +93,9 @@ async function processRemoteVersion(url, localVersion, channel) {
         const latestRelease = releases.find(r => r.fraction === undefined || r.fraction >= 0.01);
         const remoteVersion = latestRelease ? latestRelease.version : releases[0].version;
 
-        document.getElementById('remote_chrome_version').innerText = remoteVersion;
+        const highlighted = highlightDifferences(localVersion, remoteVersion);
+        document.getElementById('your_chrome_version').innerHTML = highlighted.local;
+        document.getElementById('remote_chrome_version').innerHTML = highlighted.remote;
 
         const compResult = versionCompare(localVersion, remoteVersion, { zeroExtend: true });
         const statusEl = document.getElementById("status");
@@ -155,4 +157,34 @@ function versionCompare(v1, v2, options) {
     }
 
     return v1parts.length !== v2parts.length ? -1 : 0;
+}
+
+function highlightDifferences(local, remote) {
+    if (local === remote) return { local, remote };
+    
+    let localParts = local.split('.');
+    let remoteParts = remote.split('.');
+    let localHtml = [];
+    let remoteHtml = [];
+    let diffFound = false;
+
+    for (let i = 0; i < Math.max(localParts.length, remoteParts.length); i++) {
+        const lp = localParts[i] || "0";
+        const rp = remoteParts[i] || "0";
+        
+        if (lp !== rp) diffFound = true;
+        
+        if (diffFound) {
+            localHtml.push(`<span class="diff-highlight">${lp}</span>`);
+            remoteHtml.push(`<span class="diff-highlight">${rp}</span>`);
+        } else {
+            localHtml.push(lp);
+            remoteHtml.push(rp);
+        }
+    }
+    
+    return {
+        local: localHtml.join('.'),
+        remote: remoteHtml.join('.')
+    };
 }
